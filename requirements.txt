@@ -1,0 +1,6 @@
+openbb
+pandas
+matplotlib
+numpy
+PyYAML
+streamlit

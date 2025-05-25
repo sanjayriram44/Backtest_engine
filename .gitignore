@@ -1,0 +1,50 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.so
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Environment files
+.env
+.venv/
+env/
+venv/
+myenv
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# VSCode settings (optional)
+.vscode/
+
+# Logs and outputs
+*.log
+
+# Streamlit stuff
+.streamlit/secrets.toml
+
+# Data files
+*.csv
+*.xlsx
+*.pkl
+*.json
+*.db
+
+# Configs
+config/*.yaml
+
+# Compiled reports
+*.pdf
+*.html
+
+# Coverage / testing
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.cache
+.pytest_cache/
