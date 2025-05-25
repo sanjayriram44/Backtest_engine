@@ -1,21 +1,30 @@
 import streamlit as st
-import yaml
-
 from src.data.data_handler import DataHandler
-from src.strategy.strategy_selector import get_strategy
+from src.strategy.strategy import Strategy
 from src.backtest.backtester import Backtester
 
+# Hardcoded strategies
+my_strategy_1 = Strategy(
+    indicators={
+        "high": lambda df: df["close"].rolling(window=20).max(),
+        "low": lambda df: df["close"].rolling(window=20).min(),
+        "vol_avg": lambda df: df["volume"].rolling(window=20).mean(),
+    },
+    signal_logic=lambda row: 1 if (row["close"] >= row["high"] and row["volume"] > row["vol_avg"])
+    else -1 if (row["close"] <= row["low"] and row["volume"] > row["vol_avg"])
+    else 0
+)
 
-st.title("Backtesting Engine")
-
-
-def load_config(path: str) -> dict:
-    with open(path, "r") as yaml_file:
-        return yaml.safe_load(yaml_file)
-
+my_strategy_2 = Strategy(
+    indicators={
+        "sma_fast": lambda df: df["close"].rolling(window=20).mean(),
+        "sma_slow": lambda df: df["close"].rolling(window=60).mean(),
+    },
+    signal_logic=lambda row: 1 if row["sma_fast"] > row["sma_slow"] else -1
+)
 
 def main():
-    config = load_config("config/strategy_config.yaml")
+    st.title("Backtesting Engine")
 
     with st.form(key="Strategy and commodity input"):
         ticker = st.text_input("Enter a ticker below:")
@@ -29,15 +38,13 @@ def main():
 
         data = DataHandler(
             symbol=ticker,
-            start_date=config["start_date"],
-            end_date=config["end_date"],
-            provider=config.get("provider", "yfinance"),
+            start_date="2023-01-01",
+            end_date="2023-12-31",
+            provider="yfinance"
         ).load_data()
 
-        strategy = get_strategy(
-            name=strategy_name,
-            lookback=config.get("lookback", 20)
-        )
+        # Choose strategy based on input
+        strategy = my_strategy_1 if strategy_name == "volume_breakout" else my_strategy_2
 
         data = strategy.generate_signals(data)
 
@@ -45,9 +52,7 @@ def main():
         backtester.backtest(data)
         backtester.calculate_performance()
 
-        # Display performance metrics or results here (optional)
-        st.success("Backtest complete. Check logs or results as needed.")
-
+        st.success("Backtest complete. Scroll down to see the results.")
 
 if __name__ == "__main__":
     main()
