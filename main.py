@@ -28,6 +28,9 @@ def main():
     if "order_type_selected" not in st.session_state:
         st.session_state.order_type_selected = False
 
+    if "slippage_type_selected" not in st.session_state:
+        st.session_state.slippage_type_selected = False
+
     ticker = st.text_input("Enter a ticker below:")
     strategy_name = st.radio("Select a strategy", ["volume_breakout", "sma_crossover"])
     order_type = st.radio("Select order type:", ["Market Order", "Limit Order"])
@@ -38,7 +41,21 @@ def main():
 
     buy_price = 0
     if st.session_state.order_type_selected and st.session_state.selected_order_type == "Limit Order":
-        buy_price = st.number_input("Enter Entry Price:", min_value=0.0, step=0.01)
+        buy_price = st.number_input("Enter Entry Price:", min_value=0.0, step=0.01, format = "%.5f")
+
+    slippage_type = st.radio("Select a slippage model:", ["static", "dynamic", "None"])
+
+    if st.button("Confirm slippage_model"):
+        st.session_state.slippage_type_selected = True
+        st.session_state.selected_slippage_type = slippage_type
+
+    slippage_pct = 0
+    impact_factor = 0
+    if st.session_state.slippage_type_selected and st.session_state.selected_slippage_type == "static":
+        slippage_pct = st.number_input("Enter the slippage percentage (e.g. 0.001 = 0.1%):", min_value=0.0, step=0.0001, value=0.001,format = "%.5f")
+    elif st.session_state.slippage_type_selected and st.session_state.selected_slippage_type == "dynamic":
+        slippage_pct = st.number_input("Enter base slippage (e.g. 0.001 = 0.1%):", min_value=0.0, step=0.0001, value=0.001, format = "%.5f")
+        impact_factor = st.number_input("Enter impact factor (e.g. 0.01):", min_value=0.0, step=0.0001, value=0.01, format = "%.5f")
 
     if st.button("Run Backtest"):
         if not ticker or not strategy_name:
@@ -56,10 +73,16 @@ def main():
         data = strategy.generate_signals(data)
 
         price_input = buy_price if st.session_state.selected_order_type == "Limit Order" else 0
-        backtester = Backtester(buy_price=price_input)
+        use_dynamic = st.session_state.selected_slippage_type == "dynamic"
+
+        backtester = Backtester(
+            buy_price=price_input,
+            slippage_pct=slippage_pct,
+            impact_factor=impact_factor,
+            use_dynamic_slippage=use_dynamic
+        )
         backtester.backtest(data)
         backtester.calculate_performance()
-        
 
 if __name__ == "__main__":
     main()

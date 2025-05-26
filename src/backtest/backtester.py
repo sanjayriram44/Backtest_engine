@@ -11,7 +11,10 @@ from src.performance.metrics import (
 )
 
 class Backtester:
-    def __init__(self, initial_capital: float = 10000, commission_pct: float = 0.001, commission_fixed: float = 1.0, buy_price: float = 0):
+    def __init__(self, initial_capital: float = 10000, commission_pct: float = 0.001,
+                 commission_fixed: float = 1.0, buy_price: float = 0,
+                 slippage_pct: float = 0.0, impact_factor: float = 0.0,
+                 use_dynamic_slippage: bool = False):
         self.initial_capital = initial_capital
         self.commission_pct = commission_pct
         self.commission_fixed = commission_fixed
@@ -19,20 +22,45 @@ class Backtester:
         self.portfolio_history = {}
         self.daily_portfolio_values = []
         self.buy_price = buy_price
+        self.slippage_pct = slippage_pct
+        self.impact_factor = impact_factor
+        self.use_dynamic_slippage = use_dynamic_slippage
 
     def calculate_commission(self, trade_value: float) -> float:
         return max(trade_value * self.commission_pct, self.commission_fixed)
 
-    def execute_trade(self, asset: str, signal: int, price: float) -> None:
+    def execute_trade(self, asset: str, signal: int, price: float, row: dict) -> None:
         data = self.assets_data[asset]
+
         if signal > 0 and data["cash"] > 0 and (price >= self.buy_price or self.buy_price == 0):
             trade_value = data["cash"]
+
+            if self.use_dynamic_slippage:
+                volume = row.get("volume", 100000)
+                daily_dollar_volume = price * volume
+                slippage = self.slippage_pct + self.impact_factor * (trade_value / daily_dollar_volume)
+            else:
+                slippage = self.slippage_pct
+
+            executed_price = price * (1 + slippage)
             commission = self.calculate_commission(trade_value)
-            shares_to_buy = (trade_value - commission) / price
+            shares_to_buy = (trade_value - commission) / executed_price
+
             data["positions"] += shares_to_buy
             data["cash"] -= trade_value
+
         elif signal < 0 and data["positions"] > 0:
             trade_value = data["positions"] * price
+
+            if self.use_dynamic_slippage:
+                volume = row.get("volume", 100000)
+                daily_dollar_volume = price * volume
+                slippage = self.slippage_pct + self.impact_factor * (trade_value / daily_dollar_volume)
+            else:
+                slippage = self.slippage_pct
+
+            executed_price = price * (1 - slippage)
+            trade_value = data["positions"] * executed_price
             commission = self.calculate_commission(trade_value)
             data["cash"] += trade_value - commission
             data["positions"] = 0
@@ -56,7 +84,7 @@ class Backtester:
             }
             self.portfolio_history[asset] = []
             for _, row in df.iterrows():
-                self.execute_trade(asset, row["signal"], row["close"])
+                self.execute_trade(asset, row["signal"], row["close"], row)
                 self.update_portfolio(asset, row["close"])
                 if len(self.daily_portfolio_values) < len(df):
                     self.daily_portfolio_values.append(self.assets_data[asset]["total_value"])
@@ -88,10 +116,8 @@ class Backtester:
         if plot:
             self.plot_performance(portfolio_values, daily_returns)
 
-
     def plot_performance(self, portfolio_values: pd.Series, daily_returns: pd.Series):
         st.subheader("📈 Portfolio Value Over Time")
         st.line_chart(portfolio_values)
-
         st.subheader("📊 Daily Returns Over Time")
         st.line_chart(daily_returns)
