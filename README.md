@@ -69,6 +69,7 @@ streamlit run main.py
 
 ---
 ## Project Structure
+```text
 src/
 ├── backtest/
 │   └── backtester.py       # Backtesting engine
@@ -82,6 +83,8 @@ main.py                      # Streamlit frontend entry point
 requirements.txt             # Dependencies
 README.md                    # Documentation
 .gitignore                   # Git ignore rules
+```
+
 ---
 
 ## Example Strategies
