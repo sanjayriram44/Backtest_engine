@@ -1,65 +1,49 @@
 # Backtesting Engine
 
 ## Overview
-This project is a **modular backtesting engine** built with **Python** and **Streamlit**. It allows users to test different trading strategies on historical data with configurable execution models, slippage assumptions, and order types.  
-
-The engine is designed to be flexible, extensible, and user-friendly, making it a great foundation for quantitative research or algorithmic trading experimentation.
+This project is a **modular backtesting engine** built with **Python** and **Streamlit**. It lets you test trading strategies on historical data with configurable execution models, slippage assumptions, and order types. The engine is designed to be flexible, extensible, and straightforward to demo.
 
 ---
+
 ## Features
 - **Data Handling**
-  - Fetches historical equity price data from multiple providers (default: `yfinance` via OpenBB).
-  - Supports single and multi-asset backtests.
+  - Historical equity prices via OpenBB (default provider: `yfinance`).
+  - Single- or multi-asset backtests.
 
 - **Strategy Framework**
-  - Easily define custom strategies by specifying:
-    - **Indicators**: Rolling averages, volatility, breakouts, etc.
-    - **Signal Logic**: Buy/sell/hold decisions based on indicator values.
-  - Pre-built example strategies:
+  - Define custom strategies by composing:
+    - **Indicators** (e.g., rolling highs/lows, SMAs).
+    - **Signal logic** (buy/sell/hold).
+  - Included example strategies:
     - **Volume Breakout**
     - **SMA Crossover**
 
-- **Execution & Slippage Modeling**
-  - Supports **Market Orders** and **Limit Orders**.
-  - Configurable **slippage models**:
-    - Static (fixed percentage)
-    - Dynamic (market impact based on volume and trade size)
+- **Execution & Slippage**
+  - **Market** and **Limit** orders.
+  - **Static slippage** (fixed %) and **Dynamic slippage** (market-impact based on dollar volume).
 
 - **Backtesting Engine**
-  - Capital allocation and position tracking per asset.
-  - Commission models: percentage-based and fixed.
-  - Tracks portfolio value, cash, and positions over time.
+  - Capital allocation, positions, commissions (percent and fixed), portfolio value tracking.
 
 - **Performance Analytics**
-  - Metrics:
-    - Total Return
-    - Annualized Return
-    - Annualized Volatility
-    - Sharpe Ratio
-    - Sortino Ratio
-    - Maximum Drawdown
-  - Interactive charts:
-    - Portfolio value over time
-    - Daily returns
+  - Total Return, Annualized Return/Volatility, Sharpe, Sortino, Max Drawdown.
+  - Charts for portfolio value and daily returns.
 
-- **Streamlit Frontend**
-  - Intuitive UI for:
-    - Ticker input
-    - Strategy selection
-    - Order type selection
-    - Slippage model configuration
-  - One-click backtest execution and results visualization.
+- **Streamlit UI**
+  - Inputs for ticker, strategy, order type, slippage model.
+  - One-click backtest and metric display.
 
 ---
+
 ## Requirements
 
-`requirements.txt` should include:
+Add these to `requirements.txt`:
 - streamlit  
 - pandas  
 - numpy  
 - openbb  
 - yfinance  
-- matplotlib *(optional, Streamlit charts used)*  
+- matplotlib  *(optional; Streamlit charts are used)*
 
 ---
 
@@ -67,59 +51,54 @@ The engine is designed to be flexible, extensible, and user-friendly, making it 
 
 Run the Streamlit app:
 ```bash
-streamlit run app.py
+streamlit run main.py
 ```
-
 ## Steps in the UI
 
 1. Enter a ticker (e.g., AAPL).
 
-2. Select a strategy (volume_breakout or sma_crossover).
+2. Choose a strategy (volume_breakout or sma_crossover).
 
-3. Choose order type (Market or Limit).
+3. Select order type (Market or Limit).
 
-4. Select slippage model (static, dynamic, or none).
+4. Pick slippage model (static, dynamic, or none).
 
 5. Run the backtest.
 
-6. View portfolio performance metrics and charts.
+6. Review metrics and charts.
 
-
+---
 ## Project Structure
 src/
 ├── backtest/
-│ └── backtester.py # Backtesting engine
+│   └── backtester.py       # Backtesting engine
 ├── data/
-│ └── data_handler.py # Data loading (via OpenBB)
+│   └── data_handler.py     # Data loading (via OpenBB)
 ├── performance/
-│ └── metrics.py # Performance metrics
+│   └── metrics.py          # Performance metrics
 ├── strategy/
-│ └── strategy.py # Strategy framework
-main.py # Streamlit frontend
-
-
+│   └── strategy.py         # Strategy framework
+main.py                      # Streamlit frontend entry point
+requirements.txt             # Dependencies
+README.md                    # Documentation
+.gitignore                   # Git ignore rules
 ---
 
 ## Example Strategies
+1. Volume Breakout
 
-### Volume Breakout
-- Buy when close ≥ rolling 20-day high with above-average volume.
-- Sell when close ≤ rolling 20-day low with above-average volume.
+   Buy when close ≥ rolling 20-day high with above-average volume.
 
-### SMA Crossover
-- Buy when 20-day SMA > 60-day SMA.
-- Sell when 20-day SMA < 60-day SMA.
+   Sell when close ≤ rolling 20-day low with above-average volume.
 
----
+2. SMA Crossover
 
-## Future Improvements
-- Add support for crypto and futures.
-- Extend order types (stop orders, trailing stops).
-- Monte Carlo simulation of strategy robustness.
-- Risk management modules (position sizing, leverage).
-- More performance visualizations.
+   Buy when 20-day SMA > 60-day SMA.
+
+   Sell when 20-day SMA < 60-day SMA.
 
 ---
 
 ## License
+
 MIT License
